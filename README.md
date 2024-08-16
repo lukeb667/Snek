@@ -1,5 +1,3 @@
-The classic apple and Snek game, written in Pygame, because the Python logo and Snek can be friends.
-
 # Snek
 The classic apple and Snek game, written in Pygame, because the Python logo and Snek can be friends.
 
