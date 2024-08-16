@@ -10,7 +10,7 @@ class SnekWindow():
 
         self.running = True
         self.sx, self.sy = max(self.config.getint('default', 'winsize'), 200), max(self.config.getint('default', 'winsize'), 200)
-        self.fps = 240
+        self.fps = 60
         self.pfps = min(self.config.getint('default', 'fps'), self.fps/2) 
         self.clock = pygame.time.Clock()
         self.frame = 0
@@ -22,7 +22,9 @@ class SnekWindow():
         self.tilew, self.tileh = self.sx/self.gridx, self.sy/self.gridy
         self.grid_ratio = self.gridx/self.gridy
         self.adjacent_tiles = []
-        self.use_ai = True
+        self.use_ai = self.config.getboolean('default', 'useai')
+        self.quick_move = False
+        self.can_quick_move = True
 
         if self.grid_ratio >= 1: 
             self.sy /= self.grid_ratio
@@ -142,15 +144,25 @@ class SnekWindow():
             if self.snek.dead == True: 
                 self.reset()
             else:
-                self.snek.snek_input()
-                if self.frame % (int(self.fps/self.pfps)) == True: 
-                    if self.use_ai == True:
-                        self.ai()
-                    self.sc.blit(self.bg, [0,0])
-                    self.draw_grid()
-                    self.snek.update()
-                    self.apple()
-                    self.draw_snek()
+                if self.can_quick_move:
+                  self.quick_move = self.snek.snek_input()
+                else: self.snek.snek_input() ; self.quick_move = False
+               
+                if self.frame % (int(self.fps/self.pfps)) == 0 or (self.quick_move and self.frame): 
+                     if self.can_quick_move == True:
+                        if self.use_ai == True:
+                           self.ai()
+                        self.sc.blit(self.bg, [0,0])
+                        self.draw_grid()
+                        self.snek.update()
+                        self.apple()
+                        self.draw_snek()
+
+                        if self.quick_move:
+                           self.quick_move = False
+                           self.can_quick_move = False
+                           self.frame = 1
+                     else: self.can_quick_move = True
             
 
             pygame.display.update()
@@ -166,15 +178,16 @@ class Snek():
         self.grow = False
         self.dead = False
     
-    def snek_input(self):
-        if pygame.key.get_pressed()[pygame.K_UP]:
-            if self.facing != [0,1]: self.new_facing = [0,-1]
-        elif pygame.key.get_pressed()[pygame.K_DOWN]:
-            if self.facing != [0,-1]: self.new_facing = [0,1]
-        elif pygame.key.get_pressed()[pygame.K_RIGHT]:
-            if self.facing != [-1,0]: self.new_facing = [1,0]
-        elif pygame.key.get_pressed()[pygame.K_LEFT] :
-            if self.facing != [1,0]: self.new_facing = [-1,0]
+    def snek_input(self) -> bool:
+         if pygame.key.get_pressed()[pygame.K_UP]:
+               if self.facing != [0,1]: self.new_facing = [0,-1] ; return True
+         elif pygame.key.get_pressed()[pygame.K_DOWN]:
+               if self.facing != [0,-1]: self.new_facing = [0,1] ; return True
+         elif pygame.key.get_pressed()[pygame.K_RIGHT]:
+               if self.facing != [-1,0]: self.new_facing = [1,0] ; return True
+         elif pygame.key.get_pressed()[pygame.K_LEFT] :
+               if self.facing != [1,0]: self.new_facing = [-1,0] ; return True
+         return False
     
     def update(self):
         self.facing = self.new_facing
