@@ -11,3 +11,4 @@ To Play:
 
 Use the `arrow keys` to move around and try to eat as many apples as you can. Pressing `escape` will pause the game.
 You can make the game easier or harder by editing the fps in the `config.ini` file. You can also edit the grid size. 
+

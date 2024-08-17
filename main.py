@@ -130,7 +130,7 @@ class SnekWindow():
         ap.fill('red')
 
         # draw apple
-        self.sc.blit(ap, [self.apple_pos[0]*self.tilew + int(self.tilew/4), self.apple_pos[1]*self.tileh + int(self.tileh/4)])
+        self.sc.blit(ap, [self.apple_pos[0]*self.tilew + ap.get_width()/4, self.apple_pos[1]*self.tileh + ap.get_width()/4])
 
         # check if Snek has eaten apple
         if self.snek.pdata[0] == self.apple_pos: 
@@ -153,6 +153,7 @@ class SnekWindow():
         
         for i in range(self.gridy+1):
             pygame.draw.line(self.sc, self.line_color, [0, i*self.tileh], [self.sx, i*self.tileh])
+            
         
     def mainloop(self):
         while self.running == True:
