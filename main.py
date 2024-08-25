@@ -14,10 +14,10 @@ class SnekWindow():
         self.pfps = min(self.config.getint('default', 'fps'), self.fps/2) 
         self.clock = pygame.time.Clock()
         self.frame = 0
-        self.line_color = [50,0,0]
-        
-        
+        self.line_color = [50,0,0] 
+
         # Game vars
+        self.draw_gridlines = self.config.getboolean('default', 'drawGridlines')
         self.gridx, self.gridy = max(self.config.getint('default', 'cols'), 5) , max(self.config.getint('default', 'rows'), 5)
         self.tilew, self.tileh = self.sx/self.gridx, self.sy/self.gridy
         self.grid_ratio = self.gridx/self.gridy
@@ -45,7 +45,7 @@ class SnekWindow():
         self.start = [[2,int(self.gridy/2)], [1,int(self.gridy/2)], [0,int(self.gridy/2)]]
         self.snek = Snek(self.start.copy(), (self.tilew, self.tileh), (self.gridx, self.gridy))
         
-        self.apple_pos = self.get_apple_pos()
+        self.apple_pos = self.set_apple_pos()
         self.score = 0
         self.high_score = 0
 
@@ -94,10 +94,7 @@ class SnekWindow():
                         if self.snek.new_facing == [-1,0]: self.snek.new_facing = [0,1]
                         else: self.snek.new_facing = [1,0]
         else: pass
-
-    
-
-        
+     
     def reset(self):
         # Set high score
         if self.score > self.high_score: 
@@ -108,10 +105,10 @@ class SnekWindow():
         self.snek = Snek(self.start.copy(), (self.tilew, self.tileh), (self.gridx, self.gridy))
 
         # Get new apple pos
-        self.apple_pos = self.get_apple_pos()
+        self.apple_pos = self.set_apple_pos()
         
 
-    def get_apple_pos(self):
+    def set_apple_pos(self):
         # Try to return a random coordinate for the next apple. If it's under the Snek, recalculate until a valid position is found
         x = random.randint(0, self.gridx-1)
         y = random.randint(0, self.gridy-1)
@@ -124,7 +121,7 @@ class SnekWindow():
             i += 1
         return [x,y]
     
-    def apple(self):
+    def draw_apple(self):
         # apple img
         ap = pygame.Surface([int(self.tilew/1.5), int(self.tileh/1.5)])
         ap.fill('red')
@@ -132,9 +129,11 @@ class SnekWindow():
         # draw apple
         self.sc.blit(ap, [self.apple_pos[0]*self.tilew + ap.get_width()/4, self.apple_pos[1]*self.tileh + ap.get_width()/4])
 
+    def check_apple(self):
         # check if Snek has eaten apple
         if self.snek.pdata[0] == self.apple_pos: 
-            self.apple_pos = self.get_apple_pos()
+            self.apple_pos = self.set_apple_pos()
+            self.draw_apple()
             self.snek.grow = True
             self.score = len(self.snek.pdata) - 2
             pygame.display.set_caption("Snek | High Score: " + str(self.high_score) + " | Score: " + str(self.score))
@@ -181,7 +180,8 @@ class SnekWindow():
                             self.sc.blit(self.bg, [0,0])
                             self.draw_grid()
                             self.snek.update()
-                            self.apple()
+                            self.check_apple()
+                            self.draw_apple()
                             self.draw_snek()
 
                             if self.quick_move:
@@ -206,13 +206,13 @@ class Snek():
     
     def snek_input(self) -> bool:
         # Return True if move 
-        if pygame.key.get_pressed()[pygame.K_UP]:
+        if pygame.key.get_pressed()[pygame.K_UP] or pygame.key.get_pressed()[pygame.K_w]:
             if self.facing != [0,1]: self.new_facing = [0,-1] ; return True
-        elif pygame.key.get_pressed()[pygame.K_DOWN]:
+        elif pygame.key.get_pressed()[pygame.K_DOWN] or pygame.key.get_pressed()[pygame.K_s]:
             if self.facing != [0,-1]: self.new_facing = [0,1] ; return True
-        elif pygame.key.get_pressed()[pygame.K_RIGHT]:
+        elif pygame.key.get_pressed()[pygame.K_RIGHT] or pygame.key.get_pressed()[pygame.K_d]:
             if self.facing != [-1,0]: self.new_facing = [1,0] ; return True
-        elif pygame.key.get_pressed()[pygame.K_LEFT] :
+        elif pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_a]:
             if self.facing != [1,0]: self.new_facing = [-1,0] ; return True
         return False
     
